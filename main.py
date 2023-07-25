@@ -32,8 +32,8 @@ class CloudGym:
         self.caminho = '//Pastor/analytics/Estudos/Academia'
         # options = webdriver.ChromeOptions()
         # options.add_argument("--headless=new")
-        # servico = Service(ChromeDriverManager().install()) 
-        self.driver = webdriver.Chrome() #service=servico) #, options=options)
+        servico = Service(ChromeDriverManager().install()) 
+        self.driver = webdriver.Chrome(service=servico) #, options=options)
         self.driver.maximize_window()
 
 
