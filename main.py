@@ -32,8 +32,8 @@ class CloudGym:
         self.caminho = '//Pastor/analytics/Estudos/Academia'
         # options = webdriver.ChromeOptions()
         # options.add_argument("--headless=new")
-        servico = Service(ChromeDriverManager().install()) 
-        self.driver = webdriver.Chrome(service=servico) #, options=options)
+        # servico = Service(ChromeDriverManager().install()) 
+        self.driver = webdriver.Chrome() #service=servico) #, options=options)
         self.driver.maximize_window()
 
 
@@ -70,7 +70,6 @@ class CloudGym:
     
     def __filtrar(self):
         """Filtra o período escolhido."""
-        # self.__navegar_ocupacao()
 
         # Acionando lista de períodos
         self.driver.find_element(By.ID, 'classAttendanceReportRange').click()
@@ -94,6 +93,7 @@ class CloudGym:
 
 
     def __encontrar_ano(self):
+        """Encontra o ano da data com base na data atual."""
         if self.periodo == 'ontem':
             return str((datetime.now() - relativedelta(days=1)).year)
 
@@ -169,7 +169,6 @@ class CloudGym:
     def __transformar_tabela(self):
         """Transforma a lista obtida na raspagem em um DataFrame."""
 
-        # Criando o df
         colunas = ['data', 'hora', 'professor', 'aluno', 'check_in']
         return pd.DataFrame(self.dados, columns=colunas).explode(['aluno', 'check_in'])
 
