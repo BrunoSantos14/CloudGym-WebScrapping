@@ -33,11 +33,19 @@ class CloudGym:
         # options = webdriver.ChromeOptions()
         # options.add_argument("--headless=new")
         servico = Service(ChromeDriverManager().install()) 
-        self.driver = webdriver.Chrome(service=servico) # , options=options)
+        self.driver = webdriver.Chrome(service=servico) #, options=options)
         self.driver.maximize_window()
+
+
+        self.__login()
+        self.__navegar_ocupacao()
+        self.__filtrar()
+        self.dados = self.__raspagem()
+        self.agrupar_tabelas
     
 
     def __login(self):
+        """Faz login no site da academia.""" 
         url = 'https://app.cloudgym.io/'
         self.driver.get(url)
 
@@ -52,7 +60,7 @@ class CloudGym:
     
 
     def __navegar_ocupacao(self):
-        self.__login()
+        """Navega até a página de ocupação (onde tem chek-in feito pelo professor da academia)"""
         espera = WebDriverWait(self.driver, 10)
         espera.until(EC.presence_of_element_located((By.CLASS_NAME, 'fitness'))).click()
 
@@ -61,7 +69,8 @@ class CloudGym:
     
     
     def __filtrar(self):
-        self.__navegar_ocupacao()
+        """Filtra o período escolhido."""
+        # self.__navegar_ocupacao()
 
         # Acionando lista de períodos
         self.driver.find_element(By.ID, 'classAttendanceReportRange').click()
@@ -102,7 +111,8 @@ class CloudGym:
 
 
     def __raspagem(self):
-        self.__filtrar()
+        """Encontra todos os dias, horas, professores, alunos e seu check-in de todo o período selecionado.
+        Retorna uma lista com tuplas para auxiliar na montagem de DataFrame."""
 
         tabela = self.driver.find_elements(By.CLASS_NAME, 'table-scrollable')[1]
 
@@ -156,25 +166,24 @@ class CloudGym:
         return lista
 
 
-    @property
-    def transformar_tabela(self):
-        lista = self.__raspagem()
+    def __transformar_tabela(self):
+        """Transforma a lista obtida na raspagem em um DataFrame."""
 
         # Criando o df
         colunas = ['data', 'hora', 'professor', 'aluno', 'check_in']
-        return pd.DataFrame(lista, columns=colunas).explode(['aluno', 'check_in'])
+        return pd.DataFrame(self.dados, columns=colunas).explode(['aluno', 'check_in'])
 
     @property
     def agrupar_tabelas(self):
+        """Agrupa arquivo salvo no diretório com os novos atualizados."""
         # Pegando dados novos
-        df = self.transformar_tabela
+        df = self.__transformar_tabela()
 
         # Lendo o arquivo antigo
         academia = pd.read_excel(self.caminho + '/academia.xlsx')
 
         # Retirando datas encontradas na raspagem (se precisar)
         academia = academia[~academia['data'].isin(df['data'])]
-        # academia['data'] = academia['data'].dt.strftime('%d/%m/%Y')
 
         # Agrupando os dataframes 
         agrupado = pd.concat([academia, df])
@@ -190,15 +199,11 @@ def main():
     Terça a sexta -> rodar pegando ontem.
     """
     if datetime.now().weekday() == 0:
-        CloudGym('semana_passada').agrupar_tabelas
+        CloudGym('semana_passada')
 
     elif datetime.now().weekday() in [1, 2, 3, 4]:
-        CloudGym('ontem').agrupar_tabelas
+        CloudGym('ontem')
 
 
 if __name__ == '__main__':
     main()
-
-
-    # periodo = 'mes_atual'     # {'hoje', 'ontem', 'amanha', 'semana_atual', 'semana_passada', 'proxima_semana', 'mes_atual' 'mes_passado'}
-    # CloudGym(periodo).agrupar_tabelas()
