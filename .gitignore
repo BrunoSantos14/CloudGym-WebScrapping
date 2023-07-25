@@ -1,0 +1,12 @@
+\venv
+\build
+\arquivos
+\dist
+.env
+academia.pbix
+codigo corrido.py
+app_antigo.py
+main.ipynb
+teste.ipynb
+victor.ipynb
+chromedriver.exe
