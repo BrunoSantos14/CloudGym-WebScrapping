@@ -2,6 +2,8 @@
 \build
 \arquivos
 \dist
+\__pycache__
+\main.spec
 .env
 academia.pbix
 codigo corrido.py
